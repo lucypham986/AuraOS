@@ -1,0 +1,12 @@
+/home/runner/work/AuraOS/AuraOS/target/x86_64-unknown-uefi/debug/build/spin/927edfb002abbdc6/out/spin-927edfb002abbdc6.d: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/barrier.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/lazy.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/mutex.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/mutex/spin.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/once.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/relax.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/rwlock.rs
+
+/home/runner/work/AuraOS/AuraOS/target/x86_64-unknown-uefi/debug/build/spin/927edfb002abbdc6/out/libspin-927edfb002abbdc6.rmeta: /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/lib.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/barrier.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/lazy.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/mutex.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/mutex/spin.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/once.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/relax.rs /home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/rwlock.rs
+
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/lib.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/barrier.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/lazy.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/mutex.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/mutex/spin.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/once.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/relax.rs:
+/home/runner/.cargo/registry/src/index.crates.io-1949cf8c6b5b557f/spin-0.9.9/src/rwlock.rs:

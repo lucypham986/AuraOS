@@ -4,8 +4,10 @@ use core::ptr::NonNull;
 const HEAP_SIZE: usize = 64 * 1024;
 const SLAB_CLASS_COUNT: usize = 8;
 const REGION_SIZE: usize = HEAP_SIZE / SLAB_CLASS_COUNT;
-const MAX_BITMAP_WORDS: usize = 8;
 const SLAB_SIZES: [usize; SLAB_CLASS_COUNT] = [16, 32, 64, 128, 256, 512, 1024, 2048];
+// Size class 0 is the densest slab region, so it determines the largest bitmap needed.
+const MAX_SLOTS_PER_REGION: usize = REGION_SIZE / SLAB_SIZES[0];
+const MAX_BITMAP_WORDS: usize = MAX_SLOTS_PER_REGION.div_ceil(64);
 
 #[repr(align(4096))]
 struct HeapStorage([u8; HEAP_SIZE]);
@@ -61,6 +63,10 @@ impl SlabAllocator {
             return false;
         }
 
+        if !self.is_slot_used(class_index, slot_index) {
+            return false;
+        }
+
         self.set_slot_free(class_index, slot_index);
         true
     }
@@ -72,6 +78,11 @@ impl SlabAllocator {
 
         let used_blocks = self.used_blocks(class_index);
         Some(self.capacity_for(class_index).saturating_sub(used_blocks))
+    }
+
+    pub fn available_blocks_for_layout(&self, layout: Layout) -> Option<usize> {
+        let class_index = class_index_for(layout)?;
+        self.available_blocks(class_index)
     }
 
     fn capacity_for(&self, class_index: usize) -> usize {
@@ -87,8 +98,14 @@ impl SlabAllocator {
 
     fn first_free_slot(&self, class_index: usize) -> Option<usize> {
         let capacity = self.capacity_for(class_index);
-        for slot_index in 0..capacity {
-            if !self.is_slot_used(class_index, slot_index) {
+        for (word_index, word) in self.usage_bitmap[class_index].iter().enumerate() {
+            if *word == u64::MAX {
+                continue;
+            }
+
+            let bit_index = (!*word).trailing_zeros() as usize;
+            let slot_index = word_index * 64 + bit_index;
+            if slot_index < capacity {
                 return Some(slot_index);
             }
         }
@@ -98,23 +115,35 @@ impl SlabAllocator {
     fn is_slot_used(&self, class_index: usize, slot_index: usize) -> bool {
         let word_index = slot_index / 64;
         let bit_index = slot_index % 64;
+        if word_index >= MAX_BITMAP_WORDS {
+            return false;
+        }
         (self.usage_bitmap[class_index][word_index] & (1 << bit_index)) != 0
     }
 
     fn set_slot_used(&mut self, class_index: usize, slot_index: usize) {
         let word_index = slot_index / 64;
         let bit_index = slot_index % 64;
+        if word_index >= MAX_BITMAP_WORDS {
+            return;
+        }
         self.usage_bitmap[class_index][word_index] |= 1 << bit_index;
     }
 
     fn set_slot_free(&mut self, class_index: usize, slot_index: usize) {
         let word_index = slot_index / 64;
         let bit_index = slot_index % 64;
+        if word_index >= MAX_BITMAP_WORDS {
+            return;
+        }
         self.usage_bitmap[class_index][word_index] &= !(1 << bit_index);
     }
 }
 
 fn class_index_for(layout: Layout) -> Option<usize> {
-    let required = layout.size().max(layout.align());
-    SLAB_SIZES.iter().position(|&block_size| block_size >= required)
+    SLAB_SIZES.iter().position(|&block_size| {
+        block_size >= layout.size()
+            && block_size >= layout.align()
+            && REGION_SIZE % block_size == 0
+    })
 }

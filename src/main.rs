@@ -3,20 +3,24 @@
 #![feature(abi_x86_interrupt)]
 
 use core::alloc::Layout;
+use core::panic::PanicInfo;
 
 mod heap;
 mod interrupts;
 mod memory;
 mod paging;
 
+use spin::Once;
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
 use x86_64::structures::paging::PageTableFlags;
 use x86_64::VirtAddr;
 
+static LOGGER: Once<uefi::logger::Logger> = Once::new();
+
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    uefi::helpers::init(&mut system_table).unwrap();
+    init_logger(&mut system_table);
 
     let boot_services = system_table.boot_services();
 
@@ -58,7 +62,12 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     if let Some(frame) = phys_allocator.allocate_frame() {
         let kernel_page = VirtAddr::new(0x4444_0000);
         if virtual_memory
-            .map_page(kernel_page, frame, PageTableFlags::WRITABLE)
+            .map_page(
+                kernel_page,
+                frame,
+                PageTableFlags::PRESENT | PageTableFlags::WRITABLE,
+                &mut phys_allocator,
+            )
             .is_ok()
         {
             if let Some(mapped_phys) = virtual_memory.translate_addr(kernel_page) {
@@ -68,6 +77,11 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
                     mapped_phys
                 );
             }
+
+            log::info!("Active virtual mappings: {}", virtual_memory.mapped_pages());
+            if let Some(unmapped_frame) = virtual_memory.unmap_page(kernel_page) {
+                phys_allocator.deallocate_frame(unmapped_frame);
+            }
         }
     }
 
@@ -75,8 +89,25 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     let heap_layout = Layout::from_size_align(128, 16).unwrap();
     if let Some(block) = kernel_heap.allocate(heap_layout) {
         log::info!("Allocated heap block at {:?}", block);
-        kernel_heap.deallocate(block, heap_layout);
+        if let Some(available_blocks) = kernel_heap.available_blocks_for_layout(heap_layout) {
+            log::info!("Remaining 128-byte slab blocks: {}", available_blocks);
+        }
+        if !kernel_heap.deallocate(block, heap_layout) {
+            log::error!("Failed to release heap block {:?}", block);
+        }
     }
 
     loop {}
+}
+
+fn init_logger(system_table: &mut SystemTable<Boot>) {
+    let logger = LOGGER.call_once(|| unsafe { uefi::logger::Logger::new(system_table.stdout()) });
+    let _ = log::set_logger(logger).map(|()| log::set_max_level(log::LevelFilter::Info));
+}
+
+#[panic_handler]
+fn panic(_info: &PanicInfo) -> ! {
+    loop {
+        x86_64::instructions::hlt();
+    }
 }
