@@ -8,10 +8,10 @@
 - [x] Tạo file `PROJECT_STATE.md` và `TODO.md` trong thư mục gốc.
 
 ### 2. UEFI Bootloader & Bare-Metal Output
-- [ ] Viết UEFI Entry Point bằng Rust (`uefi-rs`).
-- [ ] Cấu hình xuất dữ liệu ra màn hình Framebuffer cơ bản (Graphics Output Protocol - GOP).
-- [ ] In dòng chữ "Hello World - AURA OS Kernel" ra màn hình.
-- [ ] Cấu hình QEMU script (`qemu-system-x86_64`) để test khởi động file `.iso` / `.efi`.
+- [x] Viết UEFI Entry Point bằng Rust (`uefi-rs`).
+- [x] Cấu hình xuất dữ liệu ra màn hình Framebuffer cơ bản (Graphics Output Protocol - GOP).
+- [x] In dòng chữ "Hello World - AURA OS Kernel" ra màn hình.
+- [x] Cấu hình QEMU script (`qemu-system-x86_64`) để test khởi động file `.iso` / `.efi`.
 
 ---
 
