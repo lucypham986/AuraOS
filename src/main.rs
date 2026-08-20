@@ -1,12 +1,19 @@
 #![no_std]
 #![no_main]
 #![feature(abi_x86_interrupt)]
+#![feature(alloc_error_handler)]
 
+extern crate alloc;
+
+mod allocator;
 mod interrupts;
 mod memory;
+mod paging;
 
+use alloc::boxed::Box;
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
+use x86_64::VirtAddr;
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -50,6 +57,12 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     if let Some(frame) = phys_allocator.allocate_frame() {
         log::info!("Allocated physical frame at {:?}", frame.start_address());
     }
+
+    let mut mapper = unsafe { paging::init(VirtAddr::new(0)) };
+    paging::init_heap(&mut mapper, &mut phys_allocator).expect("heap initialization failed");
+
+    let heap_value = Box::new(0xAURA_u64);
+    log::info!("Allocated heap test value: {:#x}", *heap_value);
 
     loop {}
 }
