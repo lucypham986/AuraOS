@@ -61,7 +61,7 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     let mut mapper = unsafe { paging::init(VirtAddr::new(0)) };
     paging::init_heap(&mut mapper, &mut phys_allocator).expect("heap initialization failed");
 
-    let heap_value = Box::new(0xAURA_u64);
+    let heap_value = Box::new(0xA11A_u64);
     log::info!("Allocated heap test value: {:#x}", *heap_value);
 
     loop {}
