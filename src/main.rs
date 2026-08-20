@@ -2,11 +2,17 @@
 #![no_main]
 #![feature(abi_x86_interrupt)]
 
+use core::alloc::Layout;
+
+mod heap;
 mod interrupts;
 mod memory;
+mod paging;
 
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
+use x86_64::structures::paging::PageTableFlags;
+use x86_64::VirtAddr;
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
@@ -47,8 +53,29 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     // Initialize physical memory bitmap allocator
     let mut phys_allocator = memory::BitmapAllocator::new();
+    let mut virtual_memory = paging::VirtualMemoryManager::new();
+
     if let Some(frame) = phys_allocator.allocate_frame() {
-        log::info!("Allocated physical frame at {:?}", frame.start_address());
+        let kernel_page = VirtAddr::new(0x4444_0000);
+        if virtual_memory
+            .map_page(kernel_page, frame, PageTableFlags::WRITABLE)
+            .is_ok()
+        {
+            if let Some(mapped_phys) = virtual_memory.translate_addr(kernel_page) {
+                log::info!(
+                    "Mapped virtual page {:?} to physical frame {:?}",
+                    kernel_page,
+                    mapped_phys
+                );
+            }
+        }
+    }
+
+    let mut kernel_heap = heap::SlabAllocator::new();
+    let heap_layout = Layout::from_size_align(128, 16).unwrap();
+    if let Some(block) = kernel_heap.allocate(heap_layout) {
+        log::info!("Allocated heap block at {:?}", block);
+        kernel_heap.deallocate(block, heap_layout);
     }
 
     loop {}
