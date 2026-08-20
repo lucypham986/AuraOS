@@ -3,9 +3,9 @@
 ## SPRINT 1: BARE-METAL BOOTSTRAPPING (GIAI ĐOẠN 1)
 
 ### 1. Khởi tạo Dự án & Toolchain
-- [ ] Khởi tạo Git repository (`git init`) và cấu trúc thư mục dự án.
-- [ ] Cấu hình `Cargo.toml` ở chế độ `#![no_std]` và target `x86_64-unknown-none`.
-- [ ] Tạo file `PROJECT_STATE.md` và `TODO.md` trong thư mục gốc.
+- [x] Khởi tạo Git repository (`git init`) và cấu trúc thư mục dự án.
+- [x] Cấu hình `Cargo.toml` ở chế độ `#![no_std]` và target `x86_64-unknown-none`.
+- [x] Tạo file `PROJECT_STATE.md` và `TODO.md` trong thư mục gốc.
 
 ### 2. UEFI Bootloader & Bare-Metal Output
 - [ ] Viết UEFI Entry Point bằng Rust (`uefi-rs`).
