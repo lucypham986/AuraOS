@@ -26,7 +26,6 @@ pub struct BumpAllocator {
     heap_start: usize,
     heap_end: usize,
     next: usize,
-    allocations: usize,
 }
 
 impl BumpAllocator {
@@ -35,7 +34,6 @@ impl BumpAllocator {
             heap_start: 0,
             heap_end: 0,
             next: 0,
-            allocations: 0,
         }
     }
 
@@ -43,11 +41,12 @@ impl BumpAllocator {
         self.heap_start = heap_start;
         self.heap_end = heap_start + heap_size;
         self.next = heap_start;
-        self.allocations = 0;
     }
 
     fn allocate(&mut self, layout: Layout) -> *mut u8 {
-        let alloc_start = align_up(self.next, layout.align());
+        let Some(alloc_start) = align_up(self.next, layout.align()) else {
+            return null_mut();
+        };
         let Some(alloc_end) = alloc_start.checked_add(layout.size()) else {
             return null_mut();
         };
@@ -56,17 +55,12 @@ impl BumpAllocator {
             null_mut()
         } else {
             self.next = alloc_end;
-            self.allocations += 1;
             alloc_start as *mut u8
         }
     }
 
-    unsafe fn deallocate(&mut self) {
-        self.allocations = self.allocations.saturating_sub(1);
-        if self.allocations == 0 {
-            self.next = self.heap_start;
-        }
-    }
+    // Early-boot bump allocation never reclaims individual allocations.
+    unsafe fn deallocate(&mut self, _ptr: *mut u8, _layout: Layout) {}
 }
 
 unsafe impl GlobalAlloc for Locked<BumpAllocator> {
@@ -75,7 +69,7 @@ unsafe impl GlobalAlloc for Locked<BumpAllocator> {
     }
 
     unsafe fn dealloc(&self, _ptr: *mut u8, _layout: Layout) {
-        self.lock().deallocate();
+        self.lock().deallocate(_ptr, _layout);
     }
 }
 
@@ -84,10 +78,18 @@ pub unsafe fn init(heap_start: usize, heap_size: usize) {
 }
 
 #[alloc_error_handler]
-fn alloc_error_handler(layout: Layout) -> ! {
-    panic!("heap allocation failed: {:?}", layout)
+fn alloc_error_handler(_layout: Layout) -> ! {
+    // Early boot does not yet have a safe global reporting path for OOM.
+    loop {}
 }
 
-const fn align_up(addr: usize, align: usize) -> usize {
-    (addr + align - 1) & !(align - 1)
+fn align_up(addr: usize, align: usize) -> Option<usize> {
+    if align == 0 || !align.is_power_of_two() {
+        return None;
+    }
+
+    match addr.checked_add(align - 1) {
+        Some(aligned) => Some(aligned & !(align - 1)),
+        None => None,
+    }
 }

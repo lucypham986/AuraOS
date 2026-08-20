@@ -1,0 +1,1 @@
+/home/runner/work/AuraOS/AuraOS/target/x86_64-unknown-uefi/debug/aura-os.efi: /home/runner/work/AuraOS/AuraOS/src/allocator.rs /home/runner/work/AuraOS/AuraOS/src/interrupts.rs /home/runner/work/AuraOS/AuraOS/src/main.rs /home/runner/work/AuraOS/AuraOS/src/memory.rs /home/runner/work/AuraOS/AuraOS/src/paging.rs

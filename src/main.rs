@@ -3,22 +3,18 @@
 #![feature(abi_x86_interrupt)]
 #![feature(alloc_error_handler)]
 
-extern crate alloc;
-
 mod allocator;
 mod interrupts;
 mod memory;
 mod paging;
 
-use alloc::boxed::Box;
+use core::fmt::Write;
+use core::panic::PanicInfo;
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
-use x86_64::VirtAddr;
 
 #[entry]
 fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
-    uefi::helpers::init(&mut system_table).unwrap();
-
     let boot_services = system_table.boot_services();
 
     if let Ok(gop_handle) = boot_services.get_handle_for_protocol::<GraphicsOutput>() {
@@ -45,7 +41,7 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
         }
     }
 
-    log::info!("Hello World - AURA OS Kernel");
+    let _ = writeln!(system_table.stdout(), "Hello World - AURA OS Kernel");
 
     // Initialize IDT and PIC hardware interrupt controller
     interrupts::init_idt();
@@ -55,14 +51,22 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     // Initialize physical memory bitmap allocator
     let mut phys_allocator = memory::BitmapAllocator::new();
     if let Some(frame) = phys_allocator.allocate_frame() {
-        log::info!("Allocated physical frame at {:?}", frame.start_address());
+        let _ = writeln!(
+            system_table.stdout(),
+            "Allocated physical frame at {:?}",
+            frame.start_address()
+        );
     }
 
-    let mut mapper = unsafe { paging::init(VirtAddr::new(0)) };
-    paging::init_heap(&mut mapper, &mut phys_allocator).expect("heap initialization failed");
+    let _ = writeln!(
+        system_table.stdout(),
+        "Paging and heap groundwork added; activation needs a boot-provided physical memory offset"
+    );
 
-    let heap_value = Box::new(0xA11A_u64);
-    log::info!("Allocated heap test value: {:#x}", *heap_value);
+    loop {}
+}
 
+#[panic_handler]
+fn panic(_info: &PanicInfo<'_>) -> ! {
     loop {}
 }
