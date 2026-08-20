@@ -1,5 +1,8 @@
 #![no_std]
 #![no_main]
+#![feature(abi_x86_interrupt)]
+
+mod interrupts;
 
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
@@ -16,7 +19,6 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
             let mut fb = gop.frame_buffer();
             let (width, height) = mode.resolution();
 
-            // Basic framebuffer fill to demonstrate GOP hardware access
             for y in 0..height {
                 for x in 0..width {
                     let pixel_index = (y * width + x) * 4;
@@ -35,6 +37,9 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
     }
 
     log::info!("Hello World - AURA OS Kernel");
+
+    interrupts::init_idt();
+    x86_64::instructions::interrupts::int3();
 
     loop {}
 }
