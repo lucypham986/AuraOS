@@ -19,15 +19,15 @@
 - [x] **Interrupts:** Thiết lập bảng ngắt IDT (Interrupt Descriptor Table) và xử lý ngắt phần cứng (PIC/APIC).
 - [x] **Memory Management (Physical):** Triển khai Bitmap Allocator / Buddy Allocator cho RAM vật lý.
 - [x] **Memory Management (Virtual):** Thiết lập Paging (4-level paging x86_64), cấp phát Heap (`Slab Allocator`).
-- [ ] **Multitasking:** Triển khai Kernel Threads và Preemptive Scheduler (Round-Robin).
+- [x] **Multitasking:** Triển khai Kernel Threads và Preemptive Scheduler (Round-Robin).
 
 ---
 
 ## SPRINT 3: MICROKERNEL SERVICES & AI RUNTIME (GIAI ĐOẠN 3)
-- [ ] **IPC Engine:** Thiết lập cơ chế truyền tin nhắn siêu tốc giữa Ring 0 và Ring 3.
-- [ ] **Drivers Layer:** Viết VirtIO-Block driver (đọc/ghi đĩa) và VirtIO-GPU driver.
-- [ ] **AI Micro-Runtime:** Tích hợp ONNX Runtime / `llama.cpp` C++ binding vào User Space.
-- [ ] **Zero-Copy Memory:** Thử nghiệm share memory giữa CPU và GPU qua Vulkan Memory Allocator.
+- [x] **IPC Engine:** Thiết lập cơ chế truyền tin nhắn siêu tốc giữa Ring 0 và Ring 3.
+- [x] **Drivers Layer:** Viết VirtIO-Block driver (đọc/ghi đĩa) và VirtIO-GPU driver.
+- [x] **AI Micro-Runtime:** Tích hợp ONNX Runtime / `llama.cpp` C++ binding vào User Space.
+- [x] **Zero-Copy Memory:** Thử nghiệm share memory giữa CPU và GPU qua Vulkan Memory Allocator.
 
 ---
 
