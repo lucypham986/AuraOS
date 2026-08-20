@@ -40,9 +40,10 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     log::info!("Hello World - AURA OS Kernel");
 
-    // Disable interrupts before loading IDT
-    x86_64::instructions::interrupts::disable();
+    // Initialize IDT and PIC hardware interrupt controller
     interrupts::init_idt();
+    interrupts::init_pics();
+    x86_64::instructions::interrupts::enable();
 
     // Initialize physical memory bitmap allocator
     let mut phys_allocator = memory::BitmapAllocator::new();

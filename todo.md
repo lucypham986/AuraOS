@@ -16,7 +16,7 @@
 ---
 
 ## SPRINT 2: KERNEL CORE SUBSYSTEMS (GIAI ĐOẠN 2)
-- [ ] **Interrupts:** Thiết lập bảng ngắt IDT (Interrupt Descriptor Table) và xử lý ngắt phần cứng (PIC/APIC).
+- [x] **Interrupts:** Thiết lập bảng ngắt IDT (Interrupt Descriptor Table) và xử lý ngắt phần cứng (PIC/APIC).
 - [x] **Memory Management (Physical):** Triển khai Bitmap Allocator / Buddy Allocator cho RAM vật lý.
 - [ ] **Memory Management (Virtual):** Thiết lập Paging (4-level paging x86_64), cấp phát Heap (`Slab Allocator`).
 - [ ] **Multitasking:** Triển khai Kernel Threads và Preemptive Scheduler (Round-Robin).
