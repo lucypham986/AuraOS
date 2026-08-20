@@ -3,6 +3,7 @@
 #![feature(abi_x86_interrupt)]
 
 mod interrupts;
+mod memory;
 
 use uefi::prelude::*;
 use uefi::proto::console::gop::GraphicsOutput;
@@ -18,10 +19,11 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
             let mode = gop.current_mode_info();
             let mut fb = gop.frame_buffer();
             let (width, height) = mode.resolution();
+            let stride = mode.stride();
 
             for y in 0..height {
                 for x in 0..width {
-                    let pixel_index = (y * width + x) * 4;
+                    let pixel_index = (y * stride + x) * 4;
                     if pixel_index + 3 < fb.size() {
                         unsafe {
                             let fb_ptr = fb.as_mut_ptr();
@@ -38,8 +40,15 @@ fn main(_image_handle: Handle, mut system_table: SystemTable<Boot>) -> Status {
 
     log::info!("Hello World - AURA OS Kernel");
 
+    // Disable interrupts before loading IDT
+    x86_64::instructions::interrupts::disable();
     interrupts::init_idt();
-    x86_64::instructions::interrupts::int3();
+
+    // Initialize physical memory bitmap allocator
+    let mut phys_allocator = memory::BitmapAllocator::new();
+    if let Some(frame) = phys_allocator.allocate_frame() {
+        log::info!("Allocated physical frame at {:?}", frame.start_address());
+    }
 
     loop {}
 }

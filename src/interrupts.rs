@@ -7,24 +7,21 @@ pub fn init_idt() {
         IDT.breakpoint.set_handler_fn(breakpoint_handler);
         IDT.double_fault.set_handler_fn(double_fault_handler);
         IDT.page_fault.set_handler_fn(page_fault_handler);
-        IDT.load();
+        let static_idt: &'static InterruptDescriptorTable = &*core::ptr::addr_of!(IDT);
+        static_idt.load();
     }
 }
 
-extern "x86-interrupt" fn breakpoint_handler(stack_frame: InterruptStackFrame) {
-    log::info!("EXCEPTION: BREAKPOINT\n{:#?}", stack_frame);
-}
+extern "x86-interrupt" fn breakpoint_handler(_stack_frame: InterruptStackFrame) {}
 
 extern "x86-interrupt" fn double_fault_handler(
-    stack_frame: InterruptStackFrame,
+    _stack_frame: InterruptStackFrame,
     _error_code: u64,
 ) -> ! {
-    panic!("EXCEPTION: DOUBLE FAULT\n{:#?}", stack_frame);
+    loop {}
 }
 
 extern "x86-interrupt" fn page_fault_handler(
-    stack_frame: InterruptStackFrame,
-    error_code: PageFaultErrorCode,
-) {
-    log::error!("EXCEPTION: PAGE FAULT {:?}\n{:#?}", error_code, stack_frame);
-}
+    _stack_frame: InterruptStackFrame,
+    _error_code: PageFaultErrorCode,
+) {}
