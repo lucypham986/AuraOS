@@ -132,6 +132,13 @@ impl Channel {
     }
 
     /// Spin-wait until a message can be enqueued, then send it.
+    ///
+    /// # Warning
+    /// **Do not call this while holding the same `Mutex` that wraps this
+    /// channel from a second thread** — the spin loop cannot release the lock,
+    /// which would deadlock if the queue is full.  In the current AuraOS
+    /// single-threaded boot sequence this is safe because send and recv
+    /// execute on the same hart without preemption.
     pub fn send(&mut self, msg: Message) {
         loop {
             if self.try_send(msg).is_ok() {

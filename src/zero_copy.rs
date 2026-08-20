@@ -119,19 +119,20 @@ impl ZeroCopyBridge {
         // Round size up to page boundary.
         let aligned_size = (size + 0xFFF) & !0xFFF;
 
-        // Stub: we don't actually call into the physical allocator here to
-        // avoid circular dependency.  The real implementation would call
-        // `memory::BitmapAllocator::allocate_frame` in a loop and map the
-        // resulting frames into the kernel heap range.
+        // Stub: assign a deterministic canonical sentinel address (within the
+        // x86_64 48-bit address range).  0xDEAD_0000_0000 is canonical
+        // (bits 63:48 are all zero for user addresses) and obviously invalid
+        // for real hardware access, making bugs easy to spot in a debugger.
+        let phys_base = 0xDEAD_0000_0000u64 + self.next_handle * 0x1000;
+
         let handle = BufHandle(self.next_handle);
         self.next_handle += 1;
 
         let buf = SharedBuffer {
             handle,
             size: aligned_size,
-            // Placeholder addresses — real values come from the physical allocator.
-            phys_base: 0x0000_DEAD_BEEF_0000 + handle.0 * 0x1000,
-            virt_addr: 0x0000_CAFE_0000_0000 + handle.0 * 0x1000,
+            phys_base,
+            virt_addr: 0x0000_CAFE_0000_0000u64 + handle.0 * 0x1000,
             device_iova: None,
             cpu_access,
         };

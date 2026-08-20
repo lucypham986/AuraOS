@@ -109,8 +109,11 @@ impl Scheduler {
     /// to find the next `Ready` task and marks it `Running`.
     /// Returns the `TaskId` that should now run, or `None` if no task is ready.
     pub fn schedule(&mut self) -> Option<TaskId> {
+        // Save the current running index *before* taking it.
+        let prev_idx = self.running_idx.take();
+
         // Deschedule the current task.
-        if let Some(idx) = self.running_idx.take() {
+        if let Some(idx) = prev_idx {
             if let Some(task) = self.tasks.get_mut(idx) {
                 if task.state == TaskState::Running {
                     task.state = TaskState::Ready;
@@ -125,7 +128,7 @@ impl Scheduler {
 
         // Find the next Ready task in round-robin order starting after the
         // last running position (or from 0 if there was none).
-        let start = self.running_idx.map(|i| (i + 1) % len).unwrap_or(0);
+        let start = prev_idx.map(|i| (i + 1) % len).unwrap_or(0);
         for offset in 0..len {
             let idx = (start + offset) % len;
             if self.tasks[idx].state == TaskState::Ready {
